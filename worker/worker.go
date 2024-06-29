@@ -93,3 +93,12 @@ func (w *Worker) StopTask(t task.Task) task.DockerResult {
 	log.Printf("Stopped and removed container %v for task %v\n", t.ContainerID, t.ID)
 	return result
 }
+
+func (w *Worker) GetTasks() []task.Task {
+	res := []task.Task{}
+
+	for _, t := range w.Db {
+		res = append(res, *t)
+	}
+	return res
+}
