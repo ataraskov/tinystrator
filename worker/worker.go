@@ -119,7 +119,7 @@ func (w *Worker) RunTasks() {
 		} else {
 			log.Printf("No tasks to process currently.\n")
 		}
-		log.Println("Sleeping...")
+		log.Println("Sleeping for 10s")
 		time.Sleep(10 * time.Second)
 	}
 }
