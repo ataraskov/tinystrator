@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -26,7 +25,7 @@ func main() {
 	}
 	api := worker.Api{Address: host, Port: port, Worker: &w}
 
-	go runTasks(&w)
+	go w.RunTasks()
 	go w.CollectStats()
 	go api.Start()
 
@@ -62,20 +61,5 @@ func main() {
 			fmt.Printf("[Manager] Task: id: %s, state: %d\n", t.ID, t.State)
 			time.Sleep(15 * time.Second)
 		}
-	}
-}
-
-func runTasks(w *worker.Worker) {
-	for {
-		if w.Queue.Len() != 0 {
-			result := w.RunTask()
-			if result.Error != nil {
-				log.Printf("Error running task: %v\n", result.Error)
-			}
-		} else {
-			log.Printf("No tasks to process currently.\n")
-		}
-		log.Println("Sleeping...")
-		time.Sleep(10 * time.Second)
 	}
 }

@@ -108,3 +108,18 @@ func (w *Worker) GetTasks() []task.Task {
 	}
 	return res
 }
+
+func (w *Worker) RunTasks() {
+	for {
+		if w.Queue.Len() != 0 {
+			result := w.RunTask()
+			if result.Error != nil {
+				log.Printf("Error running task: %v\n", result.Error)
+			}
+		} else {
+			log.Printf("No tasks to process currently.\n")
+		}
+		log.Println("Sleeping...")
+		time.Sleep(10 * time.Second)
+	}
+}
