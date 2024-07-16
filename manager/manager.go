@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 	"tinystrator/task"
 	"tinystrator/worker"
 
@@ -59,6 +60,16 @@ func (m *Manager) SelectWorker() string {
 }
 
 func (m *Manager) UpdateTasks() {
+	for {
+		log.Printf("Checking for task updates from workers")
+		m.updateTasks()
+		log.Println("Task updates completed")
+		log.Println("Sleeping for 15s")
+		time.Sleep(15 * time.Second)
+	}
+}
+
+func (m *Manager) updateTasks() {
 	for _, worker := range m.Workers {
 		log.Printf("Checking worker %v for task updates", worker)
 		url := fmt.Sprintf("http://%s/tasks", worker)
@@ -96,6 +107,14 @@ func (m *Manager) UpdateTasks() {
 	}
 }
 
+func (m *Manager) ProcessTasks() {
+	for {
+		log.Println("Processing any tasks in the queue")
+		m.SendWork()
+		log.Println("Sleeping for 10s")
+		time.Sleep(10 * time.Second)
+	}
+}
 func (m *Manager) SendWork() {
 	if m.Pending.Len() > 0 {
 		w := m.SelectWorker()
