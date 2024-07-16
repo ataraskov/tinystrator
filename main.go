@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 	"tinystrator/manager"
 	"tinystrator/task"
 	"tinystrator/worker"
@@ -14,47 +13,29 @@ import (
 )
 
 func main() {
-	host := os.Getenv("TINYSTRATOR_HOST")
-	port, _ := strconv.Atoi(os.Getenv("TINYSTRATOR_PORT"))
+	mhost := os.Getenv("TINYSTRATOR_MANAGER_HOST")
+	mport, _ := strconv.Atoi(os.Getenv("TINYSTRATOR_MANAGER_PORT"))
+
+	whost := os.Getenv("TINYSTRATOR_WORKER_HOST")
+	wport, _ := strconv.Atoi(os.Getenv("TINYSTRATOR_WORKER_PORT"))
 
 	fmt.Println("Starting tinystrator worker")
-
 	w := worker.Worker{
 		Queue: *queue.New(),
 		Db:    make(map[uuid.UUID]*task.Task),
 	}
-	api := worker.Api{Address: host, Port: port, Worker: &w}
+	wapi := worker.Api{Address: whost, Port: wport, Worker: &w}
 
 	go w.RunTasks()
 	go w.CollectStats()
-	go api.Start()
+	go wapi.Start()
 
-	workers := []string{fmt.Sprintf("%s:%d", host, port)}
+	fmt.Println("Starting tinystrator manager")
+	workers := []string{fmt.Sprintf("%s:%d", whost, wport)}
 	m := manager.New(workers)
-
-	for i := 0; i < 3; i++ {
-		t := task.Task{
-			ID:    uuid.New(),
-			Name:  fmt.Sprintf("test-container-%d", i),
-			State: task.Scheduled,
-			Image: "strm/helloworld-http",
-		}
-		te := task.TaskEvent{
-			ID:    uuid.New(),
-			State: task.Running,
-			Task:  t,
-		}
-		m.AddTask(te)
-		m.SendWork()
-	}
+	mapi := manager.Api{Address: mhost, Port: mport, Manager: m}
 
 	go m.UpdateTasks()
 	go m.ProcessTasks()
-
-	for {
-		for _, t := range m.TaskDb {
-			fmt.Printf("[Manager] Task: id: %s, state: %d\n", t.ID, t.State)
-			time.Sleep(15 * time.Second)
-		}
-	}
+	mapi.Start()
 }
