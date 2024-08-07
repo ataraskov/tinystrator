@@ -136,6 +136,7 @@ func (w *Worker) updateTasks() {
 			resp := w.InspectTask(*t)
 			if resp.Error != nil {
 				fmt.Printf("ERROR: %v\n", resp.Error)
+				return
 			}
 
 			if resp.Container == nil {
