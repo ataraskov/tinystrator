@@ -27,6 +27,7 @@ func main() {
 	wapi := worker.Api{Address: whost, Port: wport, Worker: &w}
 
 	go w.RunTasks()
+	go w.UpdateTasks()
 	go w.CollectStats()
 	go wapi.Start()
 
@@ -37,5 +38,6 @@ func main() {
 
 	go m.UpdateTasks()
 	go m.ProcessTasks()
+	go m.DoHealthChecks()
 	mapi.Start()
 }
